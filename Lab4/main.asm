@@ -50,6 +50,7 @@ main:
     je .endWhile
     mov rdi, [r12]
     mov rsi, r13
+    movzx rcx, byte [flagi]
     call strstr
     add r12, 8
     inc r15
@@ -105,7 +106,7 @@ readFlags: ;input[int countArg, char* strs[]];
     dec rdi
     mov rcx, 1
 .while:
-    cmp rcx, rdi
+    cmp rcx, rdi 
     je .end
     mov r12, rcx
     call getArgument
@@ -127,6 +128,7 @@ readFlags: ;input[int countArg, char* strs[]];
     cmp r8, 'i'
     jne .while
     mov [flagi], byte 1
+    jmp .while
 .end: 
     pop r12
     pop rdi

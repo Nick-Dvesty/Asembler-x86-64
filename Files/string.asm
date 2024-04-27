@@ -163,12 +163,15 @@ strsplit: ;input[char* str, char spltchar]; output[char* strings[], size_t lengh
     pop rsi
     pop rdi
     ret
-        
+    
 strstr:;input[char* str, char* fstr, flag ignoreRegistr]
     push rdi
     push rsi
     push r12
     push r13
+    push r14
+    push r15
+    mov rbx, rcx
     mov r12, rdi ;храним ссылку на искомое слово
     mov rdi, rsi
     call strlen
@@ -178,7 +181,30 @@ strstr:;input[char* str, char* fstr, flag ignoreRegistr]
     mov r13, rax  ;храним количество символов в искомом слове
     movzx rsi, byte [rsi]
 .while:
+    cmp rbx, 0
+    je .notFlag1
+    mov r14, rdi
+    mov rdi, rsi
+    call downRegistr
+    mov rsi, rdi
+    call upRegistr
+    mov r15, rdi
+    mov rdi, r14
     call strchr
+    mov r14, rax
+    mov rsi, r15
+    call strchr
+    dec r14
+    dec rax
+    cmp rax, r14
+    jbe .raxLess
+    mov rax, r14 
+.raxLess:
+    inc rax
+    jmp .flag1
+.notFlag1: 
+    call strchr
+.flag1:
     test rax, rax
     jz .end
     mov rdi, rax
@@ -189,8 +215,16 @@ strstr:;input[char* str, char* fstr, flag ignoreRegistr]
     movzx r8, byte[rdx]
     movzx r9, byte[rax]
     cmp rbx, 0
-    jne notFlag
-notFlag:    
+    je .notFlag2
+    mov r14, rdi
+    mov rdi, r8
+    call downRegistr
+    mov r8, rdi
+    mov rdi, r9 
+    call downRegistr
+    mov r9, rdi
+    mov rdi, r14
+.notFlag2:    
     cmp r8, r9
     jne .while
     inc rdx
@@ -199,6 +233,8 @@ notFlag:
     dec rdi
     mov rax, rdi
 .end:
+    pop r15
+    pop r14
     pop r13
     pop r12
     pop rsi
@@ -210,15 +246,15 @@ upRegistr: ;input[char* chr]; output[]
     jb .end
     cmp rdi, 'z'
     ja .end
-    add rdi, 32
+    sub rdi, 32
 .end:
     ret
     
-DownRegistr: ;input[char* chr]; output[]
+downRegistr: ;input[char* chr]; output[]
     cmp rdi, 'A'
     jb .end
     cmp rdi, 'Z'
     ja .end
-    sub rdi, 32
+    add rdi, 32
 .end:
     ret
