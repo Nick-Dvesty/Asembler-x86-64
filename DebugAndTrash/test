@@ -1,0 +1,118 @@
+section .data
+filename: db '/home/modnick/Documents/ProgramProjects/Nasm/text.txt', 0
+thisChar: db "t"
+sizeElem: db 1
+section .text
+global main
+main:
+    mov rbp, rsp
+    mov rax, [rsi + 8];
+    mov r12, rax
+testi:
+    mov rcx, [sizeElem]
+    cmp rcx, 0   
+    je end 
+    movzx rcx, byte [rax]
+    mov [sizeElem],byte cl
+    print sizeElem, 1
+    inc rax
+    jmp testi
+end:
+     mov rax, 60
+     mov rdi, 0
+     syscall
+
+
+openFile: ; input:[char* fileName, int flags] output: [int fd]
+    push rdi
+    push rsi
+    mov rax, 2
+    syscall
+    test rax, rax
+    js .error
+    pop rsi
+    pop rdi
+    ret
+.error: 
+    mov rax, 60
+    xor rdi, rdi
+    syscall 
+    
+flength: ;input: [int fd], output: [int length]
+    push rdi
+    push rsi
+    mov rax, 8
+    xor rsi, rsi
+    mov rdx, 2
+    syscall
+    push rax
+    mov rax, 8
+    xor rdx, rdx
+    syscall
+    pop rax
+    pop rsi
+    pop rdi
+    ret
+
+alloc: ;input:[int size], output:[size_t addres]
+    push rdi
+.while:
+    mov rcx,rdi
+    and rcx, 15
+    cmp rcx, 0
+    je .general
+    add rdi, 1
+    jmp .while
+.general:
+    push rdi
+    mov rax, 12
+    xor rdi, rdi
+    syscall
+    pop rdi
+    push rax
+    add rdi, rax
+    mov rax, 12
+    syscall
+    pop rax
+    pop rdi
+    ret
+
+readFile:; input:[char* fileName]
+section .bss
+bufer: resb 1
+section .text
+    push rdi
+    push rsi
+    push r12
+    push r15
+    xor rsi, rsi
+    call openFile
+    mov r12, rax
+    mov rdi, rax
+    call flength
+    mov r15, rax
+    mov rdi, rax
+    call alloc
+    mov rdi, r12
+    mov r12, rax
+    mov rsi, bufer
+.while:
+    test r15, r15
+    jz .end
+    xor rax, rax
+    mov rdx, 1
+    syscall
+    mov rax, [bufer]
+    mov [r12], rax
+    inc r12
+    dec r15
+    jmp .while
+.end:
+    pop r15
+    pop r12
+    pop rsi
+    pop rdi
+    ret
+
+
+    

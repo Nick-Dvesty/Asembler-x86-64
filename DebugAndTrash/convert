@@ -1,0 +1,44 @@
+;section .data
+;number: db "3333333333333"
+section .text
+;global main
+;main:
+    mov rbp, rsp; for correct debugging
+    ;write your code here
+    mov rdi, number
+    call strint
+    ret
+    
+strint:;input[char* str]
+    push r15
+    xor r15, r15
+    movzx rdx, byte [rdi]
+    cmp rdx , '-'
+    jne .positive
+    mov r15, 1
+    add rdi, 1
+.positive:
+    mov rcx, 0
+    mov rax, 0
+    mov rsi, 10
+.while:
+    movzx rcx, byte [rdi]
+    cmp rcx, 0
+    je .general
+    cmp rcx, '0'
+    jb .error
+    cmp rcx, '9'
+    ja .error
+    sub rcx, 48
+    mul rsi
+    jo .error
+    add rax, rcx
+    jo .error     
+    inc rdi
+    jmp .while
+.general:
+    ret 
+.error:
+    mov rax, 60
+    xor rdi, rdi
+    syscall

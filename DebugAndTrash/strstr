@@ -1,0 +1,91 @@
+section .data
+str: db" Te anst andi Test",0
+fstr: db"and",0
+section .text
+global main
+main:
+    mov rbp, rsp; for correct debugging
+    ;write your code here
+    mov rdi, str
+    mov rsi, fstr
+    call strstr
+    xor rax, rax
+    ret
+    
+strstr:;input[char* str, char* fstr]
+    push rdi
+    push rsi
+    push r12
+    push r13
+    mov r12, rdi ;храним ссылку на искомое слово
+    mov rdi, rsi
+    call strlen
+    dec rax
+    mov rdi, r12
+    mov r12, rsi
+    mov r13, rax  ;храним количество символов в искомом слове
+    movzx rsi, byte [rsi]
+.while:
+    call strchr
+    test rax, rax
+    jz .end
+    mov rdi, rax
+    inc rdi
+    mov rcx, r13
+    mov rdx, r12
+.for:
+    movzx r8, byte[rdx]
+    movzx r9, byte[rax]
+    cmp r8, r9
+    jne .while
+    inc rdx
+    inc rax
+    loop .for
+    dec rdi
+    mov rax, rdi
+.end:
+    pop r13
+    pop r12
+    pop rsi
+    pop rdi
+    ret
+    
+strchr: ;input[char* str, char fchar], output[size_t position]
+    push r12
+    push rsi
+    push rdi
+    call strlen
+    mov r12, rax
+    mov rcx, rax
+    mov rax, rsi
+    repne scasb 
+    pop rdi
+    mov rax, rcx
+    test rax, rax
+    jz .exit
+    sub r12, rax
+    sub r12, 1
+    mov rax, r12
+    add rax, rdi
+.exit:
+    pop rsi
+    pop r12
+    ret  
+    
+strlen: ;input[char* str], output[int size]
+    push rdi
+    mov rax, 0
+    mov rcx, -1
+    repne scasb
+    jz .found            
+    mov rdi, -1        
+    jmp .exit
+.found:          
+    pop rdx    
+    sub rdi, rdx   
+    mov rax, rdi
+    mov rdi, rdx
+    ret          
+.exit:
+    mov rax, 60
+    syscall
